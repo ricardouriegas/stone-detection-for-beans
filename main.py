@@ -146,18 +146,18 @@ class Window(QtWidgets.QWidget):
        #self.ActualizarImagen()
 
     def ProcesarImage(self):
-        # Determinar si son frijoles negros o pintos
+        # determinar si son frijoles negros o pintos
         predominante = functions.color_dominante(self._path)
         if sum(predominante) < 200:
             self.procesedImage = functions.detectar_piedras_negros(self._path)
         else:
             self.procesedImage = functions.detectar_piedras_pintos(self._path)
 
-        # Mostrar la imagen procesada en el recuadro derecho, adaptándola al tamaño del widget
+        # mostrar la imagen procesada en el recuadro derecho y adaptando su tamano
         self.ActualizarPixMap2(self.procesedImage)
         
     def ActualizarPixMap2(self, image):
-        # Redimensiona la imagen procesada para que tenga el mismo tamaño que viewer2
+        # Redimensiona la imagen procesada para que tenga el mismo tamano que viewer2
         tamano = (self.viewer2.size().width(), self.viewer2.size().height())
         image_resized = cv2.resize(image, tamano, interpolation=cv2.INTER_LINEAR)
         QImageTemp = QtGui.QImage(cv2.cvtColor(image_resized, cv2.COLOR_BGR2RGB),
