@@ -1,18 +1,18 @@
 import cv2
 import numpy as np
 
-def detectar_piedras_negros(imagen_path):
+def detectar_piedras_negros(imagen_path, colores_hsv=None):
     # cargar la imagen
     imagen = cv2.imread(imagen_path)
     imagen = cv2.resize(imagen, (0, 0), fx=0.5, fy=0.5)  # Reduce size by half
     imagen_hsv = cv2.cvtColor(imagen, cv2.COLOR_BGR2HSV)
 
-    # definir rangos de colores en HSV
-    colores_hex = ["#FCFFEE", "#FFF1E5", "#AB8683"]
-    colores_hsv = [
-        (25, 5, 235), (15, 20, 255),  # Aproximación de #FCFFEE y #FFF1E5 en HSV
-        (5, 50, 170)  # Aproximación de #AB8683 en HSV
-    ]
+    # Valores de colores en HSV: si no se provee, se usan los de frijoles negros
+    if colores_hsv is None:
+        colores_hsv = [
+            (25, 5, 235), (15, 20, 255),  # Aproximación de #FCFFEE y #FFF1E5 en HSV
+            (5, 50, 170)  # Aproximación de #AB8683 en HSV
+        ]
 
     # Máscaras para cada color
     mask_total = np.zeros(imagen.shape[:2], dtype=np.uint8)
@@ -62,6 +62,22 @@ def detectar_piedras_negros(imagen_path):
     # cv2.destroyAllWindows()
 
     return resultado
+
+# aquí estoy tratando de ajustar los parámetros de como se detecta los 
+# frijoles negros para detectar los frijoles pintos, pero no funciona bien como
+# el que tengo ahora de 1
+def detectar_piedras_pintos2(imagen_path):
+    # Definir los colores HSV para los pintos (valores ajustados)
+    # #3C3B35, #2D281E, #020106, #302E28, #0F0703, #30281D
+    colores_hsv_pintos =[(25, 30, 60),
+        (20, 85, 45),
+        # (126, 213, 6),
+        (23, 42, 48),
+        (15, 50, 15),
+        (20, 85, 45)
+    ]
+    
+    return detectar_piedras_negros(imagen_path, colores_hsv=colores_hsv_pintos)
 
 def detectar_piedras_pintos(image_path):
     # Cargar la imagen
@@ -172,7 +188,8 @@ def detectar_tipo(imagen_path):
 
 if __name__ == '__main__':
     # detectar_piedras_pintos("/home/richy/Documents/frijoles/pintos/frijol2.jpg")
-    imagen = detectar_piedras_pintos("/home/richy/Documents/frijoles/pintos/frijol2.jpg")
+    # imagen = detectar_piedras_pintos("/home/richy/Documents/frijoles/pintos/frijol2.jpg")
+    # imagen = detectar_piedras_pintos2("/home/richy/Documents/frijoles/pintos/frijol5.jpg")
     # imagen = detectar_piedras_negros("/home/richy/Documents/frijoles/negros/frijol2.jpg")
     cv2.imshow('Detected Stones', imagen)
     cv2.waitKey(0)
