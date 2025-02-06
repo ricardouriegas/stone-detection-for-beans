@@ -36,9 +36,23 @@ def detectar_piedras_negros(imagen_path):
     filtered_contours = []
     for c in contornos:
         area = cv2.contourArea(c)
-        x, y, w, h = cv2.boundingRect(c)
-        if 1350 < area < 8000:  # Discard tiny contours and very large background
-            filtered_contours.append(c)
+        if not (1350 < area < 8000):
+            continue
+        # Calcular la convexidad
+        hull = cv2.convexHull(c)
+        hull_area = cv2.contourArea(hull)
+        if hull_area == 0:
+            continue
+        convexity_ratio = area / hull_area
+        if convexity_ratio < 0.5:
+            continue
+        # Aproximar contorno y filtrar por número de vértices
+        peri = cv2.arcLength(c, True)
+        approx = cv2.approxPolyDP(c, 0.03 * peri, True)
+        vertices = len(approx)
+        if vertices < 5:
+            continue
+        filtered_contours.append(c)
 
     cv2.drawContours(resultado, filtered_contours, -1, (0, 0, 255), 2)
 
@@ -56,20 +70,20 @@ def detectar_piedras_pintos(image_path):
         print("No se pudo cargar la imagen:", image_path)
         return
 
-    # Convertir a LAB (mejor para diferenciar colores similares)
+    # Convertir a LAB
     lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
 
-    # Rangos de color ajustados para piedras (incluyendo #404038)
+    # Rangos de color ajustados para piedras
     lower_piedra = np.array([15, 115, 115])   # L mínimo reducido
-    upper_piedra = np.array([75, 145, 145])   # L máximo aumentado
+    upper_piedra = np.array([75, 145, 145])     # L máximo aumentado
 
     # Crear máscara
     mask = cv2.inRange(lab, lower_piedra, upper_piedra)
 
-    # Operaciones morfológicas mejoradas
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
-    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=2)
-    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=3)
+    # Operaciones morfológicas con kernel similar a los negros
+    kernel = np.ones((5, 5), np.uint8)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
 
     # Encontrar contornos
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -86,17 +100,24 @@ def detectar_piedras_pintos(image_path):
         if perimeter == 0:
             continue
         circularity = 4 * np.pi * area / (perimeter ** 2)
-
         if circularity > 0.65 or circularity < 0.15:
+            continue
+
+        # Calcular la convexidad
+        hull = cv2.convexHull(cnt)
+        hull_area = cv2.contourArea(hull)
+        if hull_area == 0:
+            continue
+        convexity_ratio = area / hull_area
+        if convexity_ratio < 0.4:
             continue
 
         approx = cv2.approxPolyDP(cnt, 0.03 * perimeter, True)
         vertices = len(approx)
-
         if vertices < 6 or vertices > 15:
             continue
 
-        # Usar mismo formato que en detectar_piedras_negros: contorno y rectángulo en rojo
+        # Dibujar contorno y rectángulo en rojo
         cv2.drawContours(result, [approx], -1, (0, 0, 255), 2)
         x, y, w, h = cv2.boundingRect(cnt)
         cv2.rectangle(result, (x, y), (x + w, y + h), (0, 0, 255), 2)
@@ -150,4 +171,9 @@ def detectar_piedras(imagen_path):
     print(tipo)
 
 if __name__ == '__main__':
-    detectar_piedras("/home/richy/Documents/frijoles/pintos/frijol1.jpg")
+    # detectar_piedras_pintos("/home/richy/Documents/frijoles/pintos/frijol2.jpg")
+    # imagen = detectar_piedras_pintos("/home/richy/Documents/frijoles/pintos/frijol2.jpg")
+    imagen = detectar_piedras_negros("/home/richy/Documents/frijoles/negros/frijol2.jpg")
+    cv2.imshow('Detected Stones', imagen)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()

@@ -16,6 +16,9 @@ python3 main.py
 """
 
 
+import functions # archivo functions.py con las funciones para el procesamiento de la imagen
+import numpy as np
+
 from ast import literal_eval as make_tuple
 import os
 from PyQt6.QtCore import QSize, Qt, pyqtSignal
@@ -143,10 +146,27 @@ class Window(QtWidgets.QWidget):
        #self.ActualizarImagen()
 
     def ProcesarImage(self):
-        OpenCV_image2 = self.OpenCV_image.copy() 
-        self.procesedImage = abs(255-OpenCV_image2)
-        self.ActualizarPixMap2 (self.procesedImage) 
+        # Determinar si son frijoles negros o pintos
+        predominante = functions.color_dominante(self._path)
+        if sum(predominante) < 200:
+            self.procesedImage = functions.detectar_piedras_negros(self._path)
+        else:
+            self.procesedImage = functions.detectar_piedras_pintos(self._path)
+
+        # Mostrar la imagen procesada en el recuadro derecho, adaptándola al tamaño del widget
+        self.ActualizarPixMap2(self.procesedImage)
         
+    def ActualizarPixMap2(self, image):
+        # Redimensiona la imagen procesada para que tenga el mismo tamaño que viewer2
+        tamano = (self.viewer2.size().width(), self.viewer2.size().height())
+        image_resized = cv2.resize(image, tamano, interpolation=cv2.INTER_LINEAR)
+        QImageTemp = QtGui.QImage(cv2.cvtColor(image_resized, cv2.COLOR_BGR2RGB),
+                                  image_resized.shape[1],
+                                  image_resized.shape[0],
+                                  image_resized.shape[1] * 3,
+                                  QtGui.QImage.Format.Format_RGB888)
+        pixmap = QtGui.QPixmap(QImageTemp)
+        self.viewer2.setPixmap(pixmap)
     
     def handleSaveFile(self):
         #options = QtWidgets.QFileDialog.Options()
@@ -188,14 +208,6 @@ class Window(QtWidgets.QWidget):
 
         pixmap = QtGui.QPixmap(QImageTemp)
         self.viewer.setPixmap(pixmap)
-    
-
-
-    def ActualizarPixMap2 (self, image):
-        QImageTemp = QtGui.QImage(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), image.shape[1],image.shape[0], image.shape[1] * 3,QtGui.QImage.Format.Format_RGB888)
-
-        pixmap = QtGui.QPixmap(QImageTemp)
-        self.viewer2.setPixmap(pixmap)
         
        
     def ActualizarImagen (self):

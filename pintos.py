@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-def detectar_piedritas_color_frijoles_pintos(image_path):
+def detectar_piedras_pintos(image_path):
     # Cargar la imagen
     image = cv2.imread(image_path)
     if image is None:
@@ -66,4 +66,4 @@ def detectar_piedritas_color_frijoles_pintos(image_path):
     cv2.destroyAllWindows()
 
 if __name__ == '__main__':
-    detectar_piedritas_color_frijoles_pintos("/home/richy/Documents/frijoles/pintos/frijol1.jpg")
+    detectar_piedras_pintos("/home/richy/Documents/frijoles/pintos/frijol1.jpg")

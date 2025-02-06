@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-def detectar_piedras(imagen_path):
+def detectar_piedras_negros(imagen_path):
     # Cargar la imagen
     imagen = cv2.imread(imagen_path)
     imagen = cv2.resize(imagen, (0, 0), fx=0.5, fy=0.5)  # Reduce size by half
@@ -50,4 +50,5 @@ def detectar_piedras(imagen_path):
     return resultado
 
 # Ejecutar detección
-detectar_piedras("/home/richy/Documents/frijoles/negros/frijol2.jpg")
+if __name__ == '__main__':
+    detectar_piedras_negros("/home/richy/Documents/frijoles/negros/frijol2.jpg")
