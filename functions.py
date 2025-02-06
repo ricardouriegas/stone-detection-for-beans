@@ -153,7 +153,7 @@ def color_dominante(ruta_imagen, reduce_factor=8):
 
     return tuple(color_rgb)
 
-def detectar_piedras(imagen_path):
+def detectar_tipo(imagen_path):
     image = cv2.imread(imagen_path)
     if image is None:
         print("No se pudo cargar la imagen:", imagen_path)
@@ -172,8 +172,8 @@ def detectar_piedras(imagen_path):
 
 if __name__ == '__main__':
     # detectar_piedras_pintos("/home/richy/Documents/frijoles/pintos/frijol2.jpg")
-    # imagen = detectar_piedras_pintos("/home/richy/Documents/frijoles/pintos/frijol2.jpg")
-    imagen = detectar_piedras_negros("/home/richy/Documents/frijoles/negros/frijol2.jpg")
+    imagen = detectar_piedras_pintos("/home/richy/Documents/frijoles/pintos/frijol2.jpg")
+    # imagen = detectar_piedras_negros("/home/richy/Documents/frijoles/negros/frijol2.jpg")
     cv2.imshow('Detected Stones', imagen)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
