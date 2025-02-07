@@ -58,6 +58,26 @@ class MiEtiqueta(QtWidgets.QLabel):
 
 class Window(QtWidgets.QWidget):
 
+    def undoCircle(self):
+        # Check if there is a circle to remove
+        if not self.viewer.Lista:
+            QtWidgets.QMessageBox.information(self, 'Info', "No more circles to remove.")
+            return
+        # Remove the last point added
+        self.viewer.Lista.pop()
+        # Reload the original image
+        self.OpenCV_image = cv2.imread(self._path)
+        if self.OpenCV_image is None:
+            QtWidgets.QMessageBox.warning(self, 'Error', f"Could not load image file: {self._path}")
+            return
+        tamano = (self.viewer.size().width(), self.viewer.size().height())
+        self.OpenCV_image = cv2.resize(self.OpenCV_image, tamano, interpolation=cv2.INTER_LINEAR)
+        # Redraw circles for remaining points
+        for point in self.viewer.Lista:
+            ii = tuple(int(x) for x in point)
+            self.OpenCV_image = cv2.circle(self.OpenCV_image, ii, 10, (255,255,0), 4)
+        self.ActualizarPixMap()
+
     def Metodo (self):
         # Validación: confirmar que la imagen esté cargada
         if not hasattr(self, "OpenCV_image") or self.OpenCV_image is None:
@@ -112,6 +132,8 @@ class Window(QtWidgets.QWidget):
         #self.botonProcesaReservado.setText("Marker Ratio")
         #self.botonProcesaReservado.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.botonProcesaReservado.setMinimumSize(BUTTON_SIZE)
+        # Connect the "Reservado" button to undoCircle (ctrl+z behavior)
+        self.botonProcesaReservado.clicked.connect(self.undoCircle)
 
         layout.addWidget(self.buttonOpen, 0, 0, 1, 1)
         layout.addWidget(self.guardarImagen, 0, 3, 1, 1)
