@@ -59,9 +59,12 @@ class MiEtiqueta(QtWidgets.QLabel):
 class Window(QtWidgets.QWidget):
 
     def Metodo (self):
+        # Validación: confirmar que la imagen esté cargada
+        if not hasattr(self, "OpenCV_image") or self.OpenCV_image is None:
+            QtWidgets.QMessageBox.warning(self, 'Error', "Image not loaded.")
+            return
         r=1
         for i in self.viewer.Lista:
-            print(i)
             ii = tuple(int(x) for x in i)
             self.OpenCV_image = cv2.circle(self.OpenCV_image,ii,10,(255,255,0),4 ) 
         self.ActualizarPixMap()
@@ -88,7 +91,7 @@ class Window(QtWidgets.QWidget):
         self.viewer2 =MiEtiqueta ()
         self.viewer.clicked.connect(self.Metodo)
         
-        self.buttonOpen = QtWidgets.QPushButton("Open Image")
+        self.buttonOpen = QtWidgets.QPushButton("Abrir Imagen")
         BUTTON_SIZE = QSize(200, 50)
         self.buttonOpen.setMinimumSize(BUTTON_SIZE)
         self.buttonOpen.clicked.connect(self.handleOpen)
@@ -105,7 +108,7 @@ class Window(QtWidgets.QWidget):
 
 
         layout = QtWidgets.QGridLayout(self)
-        self.botonProcesaReservado = QtWidgets.QPushButton("Reserved")
+        self.botonProcesaReservado = QtWidgets.QPushButton("Reservado")
         #self.botonProcesaReservado.setText("Marker Ratio")
         #self.botonProcesaReservado.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.botonProcesaReservado.setMinimumSize(BUTTON_SIZE)
@@ -129,7 +132,11 @@ class Window(QtWidgets.QWidget):
         
         print (self.viewer.size(),type(self.viewer.size()),Tamano)
 
+    def ActualizarPixMap (self):
+        QImageTemp = QtGui.QImage(cv2.cvtColor(self.OpenCV_image, cv2.COLOR_BGR2RGB), self.OpenCV_image.shape[1],self.OpenCV_image.shape[0], self.OpenCV_image.shape[1] * 3,QtGui.QImage.Format.Format_RGB888)
 
+        pixmap = QtGui.QPixmap(QImageTemp)
+        self.viewer.setPixmap(pixmap)
 
     def MyMouseClickedOnListViewXX (self,e):
         IndiceCliqueado=self.ListView.currentIndex().row()
@@ -142,7 +149,10 @@ class Window(QtWidgets.QWidget):
        #self.ActualizarImagen()
 
     def ProcesarImage(self):
-        # determinar si son frijoles negros o pintos
+        # Validación: confirmar que se haya abierto una imagen
+        if not self._path:
+            QtWidgets.QMessageBox.warning(self, 'Error', "No image file opened.")
+            return
         predominante = functions.color_dominante(self._path)
         if sum(predominante) < 200:
             self.procesedImage = functions.detectar_piedras_negros(self._path)
@@ -153,6 +163,10 @@ class Window(QtWidgets.QWidget):
         self.ActualizarPixMap2(self.procesedImage)
         
     def ActualizarPixMap2(self, image):
+        # Validación: confirmar que la imagen procesada no esté vacía
+        if image is None:
+            QtWidgets.QMessageBox.warning(self, 'Error', "Processed image is empty.")
+            return
         # Redimensiona la imagen procesada para que tenga el mismo tamano que viewer2
         tamano = (self.viewer2.size().width(), self.viewer2.size().height())
         image_resized = cv2.resize(image, tamano, interpolation=cv2.INTER_LINEAR)
@@ -165,9 +179,14 @@ class Window(QtWidgets.QWidget):
         self.viewer2.setPixmap(pixmap)
     
     def handleSaveFile(self):
-        #options = QtWidgets.QFileDialog.Options()
-        #options |= QtWidgets.QFileDialog.DontUseNativeDialog
         fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save File", "", "Images(*.jpg *.png)")
+        # Validación: confirmar que se haya especificado un nombre de archivo y que exista imagen procesada
+        if not fileName:
+            QtWidgets.QMessageBox.warning(self, 'Error', "No file name specified.")
+            return
+        if not hasattr(self, 'procesedImage') or self.procesedImage is None:
+            QtWidgets.QMessageBox.warning(self, 'Error', "No processed image to save.")
+            return
         print (fileName)
         cv2.imwrite(fileName,self.procesedImage)
 
@@ -176,39 +195,22 @@ class Window(QtWidgets.QWidget):
         start="."
 
         path = QtWidgets.QFileDialog.getOpenFileName(self, "Choose File", start, "Images(*.jpg *.png)")[0]
+        # Validación: confirmar que se haya seleccionado un archivo
+        if not path:
+            QtWidgets.QMessageBox.warning(self, 'Error', "No file selected.")
+            return
         self.FilePath = path+".txt"
         self._path = path
 
         self.ActualizarImagen()
 
-    def ActualizarImagenF (self):
-
-
-        self.labelCoords.clear()
-        pixmap = QtGui.QPixmap(path)
-        if not (pixmap.isNull()):
-            #self.viewer.setPhoto(pixmap)
-            self.viewer.setPixmap(pixmap)
-
-            self._path = path
-            self.OpenCV_image = cv2.imread(path)
-            print (self.OpenCV_image.shape)
-        else:
-            QtWidgets.QMessageBox.warning(self, 'Error',
-            f'<br>Could not load image file:<br>'
-            f'<br><b>{path}</b><br>')
-        #self.ActualizarImagen()
-
-    def ActualizarPixMap (self):
-        QImageTemp = QtGui.QImage(cv2.cvtColor(self.OpenCV_image, cv2.COLOR_BGR2RGB), self.OpenCV_image.shape[1],self.OpenCV_image.shape[0], self.OpenCV_image.shape[1] * 3,QtGui.QImage.Format.Format_RGB888)
-
-        pixmap = QtGui.QPixmap(QImageTemp)
-        self.viewer.setPixmap(pixmap)
-        
-       
     def ActualizarImagen (self):
 
         self.OpenCV_image = cv2.imread(self._path)
+        # Validación: confirmar que la imagen se haya cargado
+        if self.OpenCV_image is None:
+            QtWidgets.QMessageBox.warning(self, 'Error', f"Could not load image file: {self._path}")
+            return
         Tamano=(self.viewer.size().width(),self.viewer.size().height())
         print (self.viewer.size(),type(self.viewer.size()),Tamano)           
         self.OpenCV_image = cv2.resize(self.OpenCV_image, Tamano, interpolation = cv2.INTER_LINEAR)
