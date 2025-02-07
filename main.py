@@ -5,6 +5,7 @@ Author: Ricardo Emmanuel Uriegas Ibarra - 2230122
 Requirements:
 pip3 install pyqt6
 pip3 install opencv-python
+pip3 install opencv-python-headless numpy
 
 Version verification:
 pip3 show pyqt6
@@ -17,10 +18,8 @@ python3 main.py
 
 
 import functions # archivo functions.py con las funciones para el procesamiento de la imagen
-import numpy as np
 
 from ast import literal_eval as make_tuple
-import os
 from PyQt6.QtCore import QSize, Qt, pyqtSignal
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QApplication, QDialog, QMainWindow, QPushButton
@@ -34,10 +33,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 from PyQt6.QtGui import QFont
-
-
 import cv2
-import random
 
 class MiEtiqueta(QtWidgets.QLabel):
     def __init__(self):
