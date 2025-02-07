@@ -25,7 +25,7 @@ def detectar_piedras_negros(imagen_path, colores_hsv=None):
     # cargar la imagen
     imagen = cv2.imread(imagen_path)
     imagen = cv2.resize(imagen, (0, 0), fx=0.5, fy=0.5)  # reducir el tamano a la mitad
-    imagen_hsv = cv2.cvtColor(imagen, cv2.COLOR_BGR2HSV) # 
+    imagen_hsv = cv2.cvtColor(imagen, cv2.COLOR_BGR2HSV) # pasar a hsv
 
     # colores en HSV
     colores_hsv = [
@@ -122,20 +122,20 @@ def detectar_piedras_pintos(image_path):
     
     # mascara para cada color
     for hex_color in hex_colors:
-        # convertir hex a componente decimal
+        # convertir hex a numero
         r = int(hex_color[0:2], 16)
         g = int(hex_color[2:4], 16)
         b = int(hex_color[4:6], 16)
-        # cv2 trabaja en formato BGR
+        # cv2 trabaja en BGR
         color_bgr = np.uint8([[[b, g, r]]])
-        # convertir el color BGR a LAB
+        # convertir el BGR a LAB
         color_lab = cv2.cvtColor(color_bgr, cv2.COLOR_BGR2LAB)[0][0]
         lower_color = np.clip(color_lab - tolerance, 0, 255)
         upper_color = np.clip(color_lab + tolerance, 0, 255)
         mask = cv2.inRange(lab, lower_color, upper_color)
         mask_total = cv2.bitwise_or(mask_total, mask)
 
-    # operaciones morfológicas
+    # operaciones morfologicas
     kernel = np.ones((5, 5), np.uint8)
     mask_total = cv2.morphologyEx(mask_total, cv2.MORPH_OPEN, kernel)
     mask_total = cv2.morphologyEx(mask_total, cv2.MORPH_CLOSE, kernel)
@@ -210,29 +210,30 @@ def color_dominante(ruta_imagen, reduce_factor=8):
 
     return tuple(color_rgb)
 
-def detectar_tipo(imagen_path):
-    image = cv2.imread(imagen_path)
-    if image is None:
-        print("No se pudo cargar la imagen:", imagen_path)
-        return
+# esta funcion la use para checar que funcionara
+# def detectar_tipo(imagen_path):
+#     image = cv2.imread(imagen_path)
+#     if image is None:
+#         print("No se pudo cargar la imagen:", imagen_path)
+#         return
     
-    # checar si la imagen es de frijoles pintos o negros usando el color predominante
-    predominante = color_dominante(imagen_path)
+#     # checar si la imagen es de frijoles pintos o negros usando el color predominante
+#     predominante = color_dominante(imagen_path)
 
-    # si el predominante es menor a 200, entonces son negros, sino son pintos
-    if sum(predominante) < 200:
-        tipo = "Frijoles Negros"
-    else:
-        tipo = "Frijoles Pintos"
+#     # si el predominante es menor a 200, entonces son negros, sino son pintos
+#     if sum(predominante) < 200:
+#         tipo = "Frijoles Negros"
+#     else:
+#         tipo = "Frijoles Pintos"
 
-    print(tipo)
+#     print(tipo)
 
 # para probar de manera rapida
-if __name__ == '__main__':
-    # detectar_piedras_pintos("/home/richy/Documents/frijoles/pintos/frijol2.jpg")
-    imagen = detectar_piedras_pintos("/home/richy/Documents/frijoles/pintos/frijol1.jpg")
-    # imagen = detectar_piedras_pintos2("/home/richy/Documents/frijoles/pintos/frijol5.jpg")
-    # imagen = detectar_piedras_negros("/home/richy/Documents/frijoles/negros/frijol2.jpg")
-    cv2.imshow('Detected Stones', imagen)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+# if __name__ == '__main__':
+#     # detectar_piedras_pintos("/home/richy/Documents/frijoles/pintos/frijol2.jpg")
+#     imagen = detectar_piedras_pintos("/home/richy/Documents/frijoles/pintos/frijol1.jpg")
+#     # imagen = detectar_piedras_pintos2("/home/richy/Documents/frijoles/pintos/frijol5.jpg")
+#     # imagen = detectar_piedras_negros("/home/richy/Documents/frijoles/negros/frijol2.jpg")
+#     cv2.imshow('Detected Stones', imagen)
+#     cv2.waitKey(0)
+#     cv2.destroyAllWindows()
